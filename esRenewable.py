@@ -7,21 +7,20 @@ Created on Tue Nov 27 13:56:53 2018
 import pandas as pd
 import pulp
 import matplotlib.pyplot as plt
+from dataprocess import dataFormat
 
-def esBalance(esCap, demand):
+def esRenewable(esCap, demand):
 
     disE = 0.85 #example battery efficiencies
     chaE = 0.85
     flow = demand['Power']
-    idsA = flow.where(flow > flow.mean(0))
-    idsB = flow.where(flow < flow.mean(0))
+    idsA = flow.where(flow > 0)
+    idsB = flow.where(flow < 0)
     above = idsA.dropna()
     below = idsB.dropna()
     aboveIds = above.index
     belowIds = below.index
 
-    
-    #esUpper=pulp.LpVariable("esUpper", lowBound=0, upBound=esCap, cat='Continuous')
  
     charge = pulp.LpVariable.dicts("charge", 
                                ((Idx,1) for Idx in demand.index), 
@@ -118,13 +117,8 @@ def esBalance(esCap, demand):
     return f, newDemand, maxFlow, c, d
     
 if __name__ == '__main__':
-    print("Running Optimization")
-    day=361
-    idReal=list(range(1,25))
-    demandProxy = pd.DataFrame.from_csv('gsp_demand.csv')
-    demand=demandProxy[((day*24)- 24):(day*24)]
-    demand.index = [idReal]
-    demand.columns=['Power']
+    demandProxy = dataFormat()
+    demandProxy[((24*day)-24):(24*day)]
     esCap = 60
     
-    f, newDemand, maxFlow, c, d = esBalance(esCap, demand)                
+    f, newDemand, maxFlow, c, d = esRenewable(esCap, demand)                
